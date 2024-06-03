@@ -64,3 +64,79 @@ class Passaro:
             if self.angulo > -90:
                 self.angulo -= self.VELOCIDADE_ROTACAO
 
+    def desenhar(self, tela):
+        # Animação do pássaro (bate as asas)
+        self.contagem_imagem += 1
+
+        if self.contagem_imagem < self.TEMPO_ANIMACAO:
+            self.imagem = self.IMGS[0]
+        elif self.contagem_imagem < self.TEMPO_ANIMACAO*2:
+            self.imagem = self.IMGS[1]
+        elif self.contagem_imagem < self.TEMPO_ANIMACAO*3:
+            self.imagem = self.IMGS[2]
+        elif self.contagem_imagem < self.TEMPO_ANIMACAO*4:
+            self.imagem = self.IMGS[1]
+        elif self.contagem_imagem >= self.TEMPO_ANIMACAO*4 + 1:
+            self.imagem = self.IMGS[0]
+            self.contagem_imagem = 0
+
+        # Mantém a asa para cima quando o pássaro estiver caindo rápido
+        if self.angulo <= -80:
+            self.imagem = self.IMGS[1]
+            self.contagem_imagem = self.TEMPO_ANIMACAO*2
+
+        # Desenha o pássaro na tela com a rotação apropriada
+        imagem_rotacionada = pygame.transform.rotate(self.imagem, self.angulo)
+        pos_centro_imagem = self.imagem.get_rect(topleft=(self.x, self.y)).center
+        retangulo = imagem_rotacionada.get_rect(center=pos_centro_imagem)
+        tela.blit(imagem_rotacionada, retangulo.topleft)
+
+    def get_mask(self):
+        # Retorna a máscara para a detecção de colisão
+        return pygame.mask.from_surface(self.imagem)
+
+class Cano:
+    DISTANCIA = 200  # Distância entre os canos superior e inferior
+    VELOCIDADE = 5  # Velocidade de movimento dos canos
+
+    def __init__(self, x):
+        self.x = x
+        self.altura = 0
+        self.pos_topo = 0
+        self.pos_base = 0
+        self.CANO_TOPO = pygame.transform.flip(IMAGEM_CANO, False, True)
+        self.CANO_BASE = IMAGEM_CANO
+        self.passou = False  # Indica se o pássaro já passou pelo cano
+        self.definir_altura()
+
+    def definir_altura(self):
+        # Define a altura dos canos de forma aleatória
+        self.altura = random.randrange(50, 450)
+        self.pos_topo = self.altura - self.CANO_TOPO.get_height()
+        self.pos_base = self.altura + self.DISTANCIA
+
+    def mover(self):
+        # Move os canos para a esquerda
+        self.x -= self.VELOCIDADE
+
+    def desenhar(self, tela):
+        # Desenha os canos na tela
+        tela.blit(self.CANO_TOPO, (self.x, self.pos_topo))
+        tela.blit(self.CANO_BASE, (self.x, self.pos_base))
+
+    def colidir(self, passaro):
+        # Verifica a colisão entre o pássaro e os canos usando máscaras
+        passaro_mask = passaro.get_mask()
+        topo_mask = pygame.mask.from_surface(self.CANO_TOPO)
+        base_mask = pygame.mask.from_surface(self.CANO_BASE)
+
+        distancia_topo = (self.x - passaro.x, self.pos_topo - round(passaro.y))
+        distancia_base = (self.x - passaro.x, self.pos_base - round(passaro.y))
+
+        topo_ponto = passaro_mask.overlap(topo_mask, distancia_topo)
+        base_ponto = passaro_mask.overlap(base_mask, distancia_base)
+
+        if base_ponto or topo_ponto:
+            return True
+        else:
+            return False
