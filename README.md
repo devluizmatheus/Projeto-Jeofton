@@ -2,7 +2,8 @@
 # Projeto FlappyBird Python 
 
 Link do Vídeo: https://youtu.be/jfNnGyTCg30
-Esse projeton é para demonstrar como fazer o jogo flappybird na linguagem de Python
+
+Esse projeto é para demonstrar como fazer o jogo flappybird na linguagem de Python
 
 ## O que é o FlappyBird ??
 ![img](https://s2-techtudo.glbimg.com/7IWNxPUe3ZavTl0vMfqcjDxvUqo=/0x0:695x463/984x0/smart/filters:strip_icc()/s.glbimg.com/po/tt2/f/original/2014/02/07/flappy-bird-ios.jpg)
