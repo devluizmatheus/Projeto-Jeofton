@@ -192,3 +192,64 @@ def mostrar_mensagem(tela, mensagem):
     tela.blit(texto, (TELA_LARGURA // 2 - texto.get_width() // 2, TELA_ALTURA // 2 - texto.get_height() // 2))
     pygame.display.update()
     pygame.time.delay(2000)
+
+def main():
+    # Inicializa os objetos do jogo
+    passaros = [Passaro(230, 350)]
+    chao = Chao(730)
+    canos = [Cano(700)]
+    tela = pygame.display.set_mode((TELA_LARGURA, TELA_ALTURA))
+    pontos = 0
+    relogio = pygame.time.Clock()
+    rodando = True
+    pausado = False
+
+    while rodando:
+        relogio.tick(30)  # Controla a taxa de quadros do jogo
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                rodando = False
+                pygame.quit()
+                quit()
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_SPACE:
+                    if not pausado:
+                        for passaro in passaros:
+                            passaro.pular()
+                if evento.key == pygame.K_p:
+                    pausado = not pausado
+
+        if not pausado:
+            for passaro in passaros:
+                passaro.mover()
+            for cano in canos:
+                cano.mover()
+                # Verificação de colisão
+                for passaro in passaros:
+                    if cano.colidir(passaro):
+                        passaros.remove(passaro)
+                        mostrar_mensagem(tela, "Você Perdeu!")
+
+            # Verifica se o pássaro tocou o chão
+            for passaro in passaros:
+                if passaro.y + passaro.imagem.get_height() >= 730:
+                    passaros.remove(passaro)
+                    mostrar_mensagem(tela, "Você Perdeu!")
+
+            # Adicionar novos canos
+            if canos[0].x + canos[0].CANO_TOPO.get_width() < 0:
+                canos.pop(0)
+            if len(canos) == 0 or canos[-1].x < TELA_LARGURA - 200:
+                canos.append(Cano(TELA_LARGURA + 200))
+
+            # Atualizar pontuação
+            for cano in canos:
+                if not cano.passou and cano.x < passaros[0].x:
+                    cano.passou = True
+                    pontos += 1
+
+        desenhar_tela(tela, passaros, canos, chao, pontos, pausado)
+
+if __name__ == "__main__":
+    main()
